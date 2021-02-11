@@ -1,16 +1,22 @@
 import "phaser";
+import { emit } from "process";
 
 export default class GameSceen extends Phaser.Scene {
   particles: Phaser.GameObjects.Particles.ParticleEmitterManager;
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  bullets: {
+    emitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    obj: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  }[];
 
   constructor() {
     super("GameSceen");
+    this.bullets = [];
   }
 
   preload() {
     this.load.image("sky", "assets/space3.png");
-    this.load.image("logo", "assets/plane.png");
+    this.load.svg("logo", "assets/player.svg");
     this.load.image("red", "assets/red.png");
     this.load.image("bullet", "assets/shot1_4.png");
     this.load.image("platform", "assets/platform.png");
@@ -48,35 +54,66 @@ export default class GameSceen extends Phaser.Scene {
     var enemy = this.physics.add
       .image(100, 100, "circle")
       .setTint(0xbdbdbd, 0xbdbdbd, 0xbdbdbd, 0xbdbdbd);
-    enemy.setBounce(1);
-    enemy.setCollideWorldBounds(true);
+    // enemy.setBounce(1);
+    // enemy.setCollideWorldBounds(true);
     enemy.body.setCircle(12);
-    enemy.setVelocity(100, 200);
+    enemy.body.setCollideWorldBounds(true, 0, 0, true);
+    // enemy.setVelocity(100, 200);
+
+    this.physics.world.on(
+      "worldbounds",
+      (body: Phaser.Physics.Arcade.Body, up, down, left, right) => {
+        console.log(body.acceleration, body.velocity, up, down, left, right);
+        body.setVelocityY(-300);
+      }
+    );
   }
 
   autoShoot() {
     var emitter = this.particles.createEmitter({
-      speed: 10,
+      speed: { start: 40, end: 10 },
       scale: { start: 0.4, end: 0 },
       blendMode: "ADD",
-      lifespan: 300.0,
-    });
+      lifespan: 100.0,
+    } as Phaser.Types.GameObjects.Particles.ParticleEmitterConfig);
+
     var item = this.physics.add
-      .image(this.player.x, this.player.y, "bullet")
+      .sprite(this.player.x, this.player.y, "bullet")
       .setVisible(false);
     item.angle = -90;
     item.setVelocity(0, -800);
     emitter.startFollow(item);
     item.body.setAllowGravity(false);
+    this.bullets.push({ emitter, obj: item });
   }
 
   t = 0.0;
+  cleaningTimer = 0.0;
   update(time, delta) {
+    const fireRate = 1 / 10.0;
     var dt = delta / 1000.0;
     this.t += dt;
-    if (this.t >= 0.5) {
+    this.cleaningTimer += dt;
+    if (this.t >= fireRate) {
       this.t = 0;
       this.autoShoot();
     }
+
+    if (this.cleaningTimer >= 5) {
+      this.bullets = this.bullets
+        .map((val) => {
+          const { emitter, obj } = val;
+          if (obj.y <= -1000) {
+            obj.destroy();
+            this.particles.removeEmitter(emitter);
+            return null;
+          }
+          return val;
+        })
+        .filter(Boolean);
+      this.cleaningTimer = 0;
+    }
+    // console.log(this.bullets.length);
+    // console.log(this.game.loop.actualFps);
   }
 }
