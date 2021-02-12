@@ -1,6 +1,7 @@
 import "phaser";
 import Pellow from "./test";
 import GameSceen from "./scenes/gameScene";
+import { GRAVITY } from "./Constant";
 
 const config = {
   type: Phaser.AUTO,
@@ -11,7 +12,8 @@ const config = {
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: 200 },
+      gravity: { y: GRAVITY },
+      debug: true,
     },
   },
 };

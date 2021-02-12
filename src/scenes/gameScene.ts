@@ -1,5 +1,7 @@
 import "phaser";
 import { emit } from "process";
+import { GRAVITY } from "../Constant";
+import Enemy from "../prefabs/enemy";
 
 export default class GameSceen extends Phaser.Scene {
   particles: Phaser.GameObjects.Particles.ParticleEmitterManager;
@@ -8,6 +10,7 @@ export default class GameSceen extends Phaser.Scene {
     emitter: Phaser.GameObjects.Particles.ParticleEmitter;
     obj: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   }[];
+  enemy: Enemy;
 
   constructor() {
     super("GameSceen");
@@ -21,6 +24,8 @@ export default class GameSceen extends Phaser.Scene {
     this.load.image("bullet", "assets/shot1_4.png");
     this.load.image("platform", "assets/platform.png");
     this.load.svg("circle", "assets/circle.svg");
+
+    this.load.svg("enemy", "assets/circle.svg");
   }
 
   create() {
@@ -28,11 +33,12 @@ export default class GameSceen extends Phaser.Scene {
 
     this.particles = this.add.particles("red");
 
-    this.player = this.physics.add.sprite(200, 800, "logo");
-
-    // logo.setVelocity(100, 200);
-    this.player.setBounce(0.5);
-    this.player.setCollideWorldBounds(true);
+    this.player = this.physics.add
+      .sprite(200, 600 - 87 / 2, "logo")
+      .setImmovable(true)
+      .setGravityY(-GRAVITY);
+    // this.player.setImmovable(false);
+    this.player.setBodySize(35, 47, true);
 
     this.input.setDraggable(this.player.setInteractive());
 
@@ -51,22 +57,29 @@ export default class GameSceen extends Phaser.Scene {
 
     this.autoShoot();
 
+    this.enemy = new Enemy(this);
+
     var enemy = this.physics.add
       .image(100, 100, "circle")
       .setTint(0xbdbdbd, 0xbdbdbd, 0xbdbdbd, 0xbdbdbd);
-    // enemy.setBounce(1);
-    // enemy.setCollideWorldBounds(true);
     enemy.body.setCircle(12);
     enemy.body.setCollideWorldBounds(true, 0, 0, true);
-    // enemy.setVelocity(100, 200);
 
     this.physics.world.on(
       "worldbounds",
       (body: Phaser.Physics.Arcade.Body, up, down, left, right) => {
-        console.log(body.acceleration, body.velocity, up, down, left, right);
-        body.setVelocityY(-300);
+        // console.log(body.acceleration, body.velocity, up, down, left, right);
+        if (down) {
+          body.setVelocityY(-300);
+        } else {
+        }
       }
     );
+
+    this.physics.add.overlap(this.player, this.enemy, (o1, o2) => {
+      //   console.log(o1, o2);
+      // hit with player
+    });
   }
 
   autoShoot() {
@@ -89,6 +102,7 @@ export default class GameSceen extends Phaser.Scene {
 
   t = 0.0;
   cleaningTimer = 0.0;
+  spawnTimer = 0.0;
   update(time, delta) {
     const fireRate = 1 / 10.0;
     var dt = delta / 1000.0;
@@ -115,5 +129,11 @@ export default class GameSceen extends Phaser.Scene {
     }
     // console.log(this.bullets.length);
     // console.log(this.game.loop.actualFps);
+
+    this.spawnTimer += dt;
+    if (this.spawnTimer >= 1) {
+      this.spawnTimer = 0;
+      this.enemy.spawnEnemy();
+    }
   }
 }
