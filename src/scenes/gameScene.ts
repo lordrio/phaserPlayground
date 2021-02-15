@@ -45,7 +45,21 @@ export default class GameSceen extends Phaser.Scene {
       obj.body.moves = false;
     });
 
+    console.log(
+      this.sys.game.canvas.width,
+      this.sys.game.canvas.clientWidth,
+      this.sys.game.canvas.offsetWidth,
+      this.sys.game.canvas.scrollWidth
+    );
+
+    const screenWidth = this.sys.game.canvas.width;
     this.input.on("drag", function (pointer, obj, dragX, dragY) {
+      if (dragX <= 30) {
+        dragX = 30;
+      }
+      if (dragX >= screenWidth - 30) {
+        dragX = screenWidth - 30;
+      }
       obj.setPosition(dragX, obj.y);
     });
 
@@ -64,7 +78,7 @@ export default class GameSceen extends Phaser.Scene {
       (body: Phaser.Physics.Arcade.Body, up, down, left, right) => {
         // console.log(body.acceleration, body.velocity, up, down, left, right);
         if (down) {
-          body.setVelocityY(-300);
+          body.setVelocityY(-350);
         } else {
         }
       }
@@ -75,13 +89,16 @@ export default class GameSceen extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.enemy, (o1, o2) => {
       //   console.log(o1, o2);
       // hit with player
+      if (o1.active && o2.active) {
+        this.enemy.damageEnemy(o2, 10000);
+      }
     });
 
     this.physics.add.overlap(
       this.bullets,
       this.enemy,
       (o1, o2) => {
-        console.log("hit", o1.type, o2.type);
+        // console.log("hit", o1.type, o2.type);
         if (o1.active && o2.active) {
           this.enemy.damageEnemy(o2, 1);
           this.bullets.recycleBullets(o1);
@@ -94,7 +111,7 @@ export default class GameSceen extends Phaser.Scene {
   }
 
   autoShoot() {
-    this.bullets.fireBullet(this.player.x, this.player.y);
+    this.bullets.fireBullet(this.player.x, this.player.y - 44);
   }
 
   t = 0.0;

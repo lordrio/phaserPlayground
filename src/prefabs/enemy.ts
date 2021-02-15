@@ -31,9 +31,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   addDamage(dmg: number) {
     this.life -= dmg;
-    console.log(this.body.velocity.y);
-    this.setVelocityY(-100);
-    console.log(this.life);
+    var vel = this.body.velocity.y;
+    this.setVelocityY(vel < 0 ? vel + -100 : -100);
+    // console.log(this.life);
     if (this.life <= 0) {
       this.recycle();
     }
@@ -72,7 +72,6 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
   }
 
   damageEnemy(enemy: Enemy | any, dmg: number) {
-    console.log(enemy instanceof Enemy);
     if (!(enemy instanceof Enemy)) {
       return;
     }
