@@ -1,13 +1,13 @@
 import "phaser";
 import { emit } from "process";
 import { GRAVITY } from "../Constant";
-import Enemy from "../prefabs/enemy";
+import EnemyGp, { Enemy } from "../prefabs/enemy";
 import Bullets from "../prefabs/bullets";
 
 export default class GameSceen extends Phaser.Scene {
   particles: Phaser.GameObjects.Particles.ParticleEmitterManager;
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-  enemy: Enemy;
+  enemy: EnemyGp;
   bullets: Bullets;
 
   constructor() {
@@ -22,7 +22,15 @@ export default class GameSceen extends Phaser.Scene {
     this.load.image("platform", "assets/platform.png");
     this.load.svg("circle", "assets/circle.svg");
 
-    this.load.svg("enemy", "assets/circle.svg");
+    this.load.svg("enemy", "assets/enemy/lvl1.svg");
+
+    this.load.svg("enemy1", "assets/enemy/lvl1.svg");
+    this.load.svg("enemy2", "assets/enemy/lvl2.svg");
+    this.load.svg("enemy3", "assets/enemy/lvl3.svg");
+    this.load.svg("enemy4", "assets/enemy/lvl4.svg");
+    this.load.svg("enemy5", "assets/enemy/lvl5.svg");
+    this.load.svg("enemy6", "assets/enemy/lvl6.svg");
+    this.load.svg("enemy7", "assets/enemy/lvl7.svg");
   }
 
   create() {
@@ -69,7 +77,7 @@ export default class GameSceen extends Phaser.Scene {
     //====================== player ======================
 
     //====================== Enemy ======================
-    this.enemy = new Enemy(this);
+    this.enemy = new EnemyGp(this);
     this.bullets = new Bullets(this);
 
     // for enemy
@@ -78,7 +86,9 @@ export default class GameSceen extends Phaser.Scene {
       (body: Phaser.Physics.Arcade.Body, up, down, left, right) => {
         // console.log(body.acceleration, body.velocity, up, down, left, right);
         if (down) {
-          body.setVelocityY(-350);
+          if (body.gameObject instanceof Enemy) {
+            body.setVelocityY(-350);
+          }
         } else {
         }
       }
@@ -90,7 +100,9 @@ export default class GameSceen extends Phaser.Scene {
       //   console.log(o1, o2);
       // hit with player
       if (o1.active && o2.active) {
-        this.enemy.damageEnemy(o2, 10000);
+        this.enemy.removeEnemy(o2);
+        this.data.set("hp", this.data.get("hp") - 1);
+        this.data.get("emitter").emit("updateUI");
       }
     });
 
@@ -108,6 +120,33 @@ export default class GameSceen extends Phaser.Scene {
         return o1.active && o2.active;
       }
     );
+
+    /// UI
+    var text = this.add.text(0, 0, "", {
+      font: "24px Courier",
+      color: "#00ff00",
+    });
+
+    var emitter = new Phaser.Events.EventEmitter();
+    //  Set-up an event handler
+    emitter.on(
+      "updateUI",
+      () => {
+        text.setText([
+          "Level: " + this.data.get("level"),
+          "Lives: " + this.data.get("hp"),
+          "Score: " + this.data.get("score"),
+        ]);
+      },
+      this
+    );
+
+    this.data.set("level", 1);
+    this.data.set("hp", 10);
+    this.data.set("score", 0);
+    this.data.set("emitter", emitter);
+
+    emitter.emit("updateUI");
   }
 
   autoShoot() {
@@ -126,7 +165,7 @@ export default class GameSceen extends Phaser.Scene {
     }
 
     this.spawnTimer += dt;
-    if (this.spawnTimer >= 1) {
+    if (this.spawnTimer >= 3) {
       this.spawnTimer = 0;
       this.enemy.spawnEnemy();
     }
