@@ -87,7 +87,9 @@ export default class GameSceen extends Phaser.Scene {
         // console.log(body.acceleration, body.velocity, up, down, left, right);
         if (down) {
           if (body.gameObject instanceof Enemy) {
-            body.setVelocityY(-350);
+            var lvl = body.gameObject.enemyLvl;
+            var scaley = Phaser.Math.Linear(1.0, 1.5, (lvl - 1) / 6);
+            body.setVelocityY(-350 * scaley);
           }
         } else {
         }
