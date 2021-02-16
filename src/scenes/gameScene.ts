@@ -9,6 +9,8 @@ export default class GameSceen extends Phaser.Scene {
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   enemy: EnemyGp;
   bullets: Bullets;
+  bg: Phaser.GameObjects.TileSprite;
+  bg2: Phaser.GameObjects.TileSprite;
 
   constructor() {
     super("GameSceen");
@@ -31,10 +33,13 @@ export default class GameSceen extends Phaser.Scene {
     this.load.svg("enemy5", "assets/enemy/lvl5.svg");
     this.load.svg("enemy6", "assets/enemy/lvl6.svg");
     this.load.svg("enemy7", "assets/enemy/lvl7.svg");
+
+    this.load.image("bg", "assets/bg.png");
   }
 
   create() {
-    this.add.image(400, 300, "sky");
+    this.bg2 = this.add.tileSprite(0, 0, 2000, 2000, "bg").setScale(0.7);
+    this.bg = this.add.tileSprite(0, 0, 2000, 2000, "bg");
 
     this.particles = this.add.particles("red");
 
@@ -176,5 +181,8 @@ export default class GameSceen extends Phaser.Scene {
       this.spawnTimer = 0;
       this.enemy.spawnEnemy();
     }
+
+    this.bg.tilePositionY += -delta / 5;
+    this.bg2.tilePositionY += -delta / 7;
   }
 }

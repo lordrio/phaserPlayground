@@ -5,7 +5,7 @@ import { GRAVITY } from "./Constant";
 
 const config = {
   type: Phaser.AUTO,
-  backgroundColor: "#125555",
+  backgroundColor: "#1C1C1C",
   width: 400,
   height: 600,
   scene: [GameSceen, Pellow],
