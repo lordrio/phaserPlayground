@@ -129,6 +129,11 @@ export default class GameSceen extends Phaser.Scene {
       color: "#00ff00",
     });
 
+    this.add.text(100, 100, "🎃", {
+      font: "64px Courier",
+      color: "#00ff00",
+    });
+
     var emitter = new Phaser.Events.EventEmitter();
     //  Set-up an event handler
     emitter.on(
