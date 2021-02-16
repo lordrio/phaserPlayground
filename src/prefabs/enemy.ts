@@ -61,7 +61,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.life -= dmg;
     var vel = this.body.velocity.y;
 
-    this.setVelocityY(vel < 0 ? vel * 0.3 + -100 : -100);
+    const upwardVel = -100;
+    this.setVelocityY(
+      vel < 0 ? (vel > upwardVel ? upwardVel : vel) : upwardVel
+    );
     // console.log(this.life);
     if (this.life <= 0) {
       this.body.enable = false;

@@ -1,5 +1,4 @@
 import "phaser";
-import { emit } from "process";
 import { GRAVITY } from "../Constant";
 import EnemyGp, { Enemy } from "../prefabs/enemy";
 import Bullets from "../prefabs/bullets";
